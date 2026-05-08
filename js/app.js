@@ -81,26 +81,27 @@ function bootForRole() {
 
 // ---------- Login ----------
 function wireLogin() {
-  $('#login-form').addEventListener('submit', async (ev) => {
-    ev.preventDefault();
+  const form = $('#login-form');
+  const handleLogin = (ev) => {
+    if (ev) ev.preventDefault();
     const email = $('#login-email').value;
     const pwd   = $('#login-password').value;
-    const submitBtn = ev.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
     const errBox = $('#login-error');
-    try {
-      const r = await window.Auth.login(email, pwd);
-      if (!r.ok) {
-        errBox.textContent = r.error;
-        errBox.hidden = false;
-        return;
-      }
-      errBox.hidden = true;
-      bootForRole();
-    } finally {
-      submitBtn.disabled = false;
+    const r = window.Auth.login(email, pwd);
+    if (!r.ok) {
+      errBox.textContent = r.error;
+      errBox.hidden = false;
+      return false;
     }
-  });
+    errBox.hidden = true;
+    bootForRole();
+    return false;
+  };
+  form.addEventListener('submit', handleLogin);
+  // Defensive: also attach to the button click in case the form's submit event
+  // is intercepted somewhere up the chain.
+  form.querySelector('button[type="submit"]')
+      .addEventListener('click', (ev) => { handleLogin(ev); });
 }
 function wireLogout() {
   for (const id of ['btn-logout','btn-logout-2']) {
