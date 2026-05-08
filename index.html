@@ -21,15 +21,13 @@
 
 <div id="flash" class="flash"></div>
 
-<!-- ========== LANGUAGE TOGGLE (always on top) ========== -->
-<div id="lang-bar" class="lang-bar" role="group" aria-label="Language switcher">
-  <button class="lang-btn" data-lang="en">English</button>
-  <button class="lang-btn" data-lang="np">नेपाली</button>
-</div>
-
 <!-- ========== LOGIN VIEW ========== -->
 <div id="login-view" class="login-view" hidden>
   <form id="login-form" class="login-card" autocomplete="on" action="javascript:void(0)" novalidate>
+    <div class="lang-bar lang-bar-inline" role="group" aria-label="Language switcher">
+      <button type="button" class="lang-btn" data-lang="en">English</button>
+      <button type="button" class="lang-btn" data-lang="np">नेपाली</button>
+    </div>
     <h1 data-i18n="app_title">Water Supply M&amp;E</h1>
     <p class="muted" data-i18n="login_subtitle">KPI Performance Monitoring &amp; Evaluation Tool</p>
     <label>
@@ -57,6 +55,10 @@
         <p data-i18n="app_subtitle">Enter performance data for the 23 KPIs. Scores, category averages and the Career Path Chart update live.</p>
       </div>
       <div class="banner-user">
+        <div class="lang-bar lang-bar-banner" role="group" aria-label="Language switcher">
+          <button type="button" class="lang-btn" data-lang="en">English</button>
+          <button type="button" class="lang-btn" data-lang="np">नेपाली</button>
+        </div>
         <div class="user-name" id="who"></div>
         <button id="btn-logout" class="ghost" data-i18n="sign_out">Sign out</button>
       </div>
@@ -138,6 +140,10 @@
         <p data-i18n="admin_subtitle">Review utility submissions, open detailed reports, and export.</p>
       </div>
       <div class="banner-user">
+        <div class="lang-bar lang-bar-banner" role="group" aria-label="Language switcher">
+          <button type="button" class="lang-btn" data-lang="en">English</button>
+          <button type="button" class="lang-btn" data-lang="np">नेपाली</button>
+        </div>
         <div class="user-name" id="who-admin"></div>
         <button id="btn-logout-2" class="ghost" data-i18n="sign_out">Sign out</button>
       </div>
@@ -178,15 +184,16 @@
 </div>
 
 <!-- ========== SCRIPTS ========== -->
-<script src="js/i18n.js?v=4"></script>
-<script src="js/auth.js?v=4"></script>
-<script src="js/submissions.js?v=4"></script>
-<script src="js/hints.js?v=4"></script>
-<script src="js/kpi-config.js?v=4"></script>
-<script src="js/compute.js?v=4"></script>
-<script src="js/storage.js?v=4"></script>
-<script src="js/chart.js?v=4"></script>
-<script src="js/exporter.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/i18n.js?v=5"></script>
+<script src="js/kpi-i18n.js?v=5"></script>
+<script src="js/auth.js?v=5"></script>
+<script src="js/submissions.js?v=5"></script>
+<script src="js/hints.js?v=5"></script>
+<script src="js/kpi-config.js?v=5"></script>
+<script src="js/compute.js?v=5"></script>
+<script src="js/storage.js?v=5"></script>
+<script src="js/chart.js?v=5"></script>
+<script src="js/exporter.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 </body>
 </html>

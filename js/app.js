@@ -165,8 +165,15 @@ function ensureBucket(kpiId, subId) {
 }
 
 function buildHintHtml(kpi) {
-  const h = window.KPI_HINTS?.[kpi.id];
-  if (!h) return `<div class="muted">${window.I18N.t('hint_unavailable')}</div>`;
+  const en = window.KPI_HINTS?.[kpi.id];
+  if (!en) return `<div class="muted">${window.I18N.t('hint_unavailable')}</div>`;
+  const isNp = window.I18N.current === 'np';
+  const np = isNp ? window.KPI_HINTS_NP?.[kpi.id] : null;
+  const h = {
+    concept: (np && np.concept) || en.concept,
+    data:    (np && np.data)    || en.data,
+    notes:   (np && np.notes)   || en.notes,
+  };
   const T = window.I18N.t.bind(window.I18N);
   let out = '';
   if (h.concept) out += `<p><strong>${T('hint_concept')}:</strong> ${escapeHtml(h.concept)}</p>`;
@@ -231,15 +238,18 @@ function renderKpis() {
     );
     kpiCard.appendChild(head);
     if (kpi.description) {
-      kpiCard.appendChild(el('div', { class: 'kpi-desc' }, kpi.description));
+      kpiCard.appendChild(el('div', { class: 'kpi-desc' },
+        window.I18N.kpiDesc ? window.I18N.kpiDesc(kpi.id, kpi.description) : kpi.description));
     }
 
     for (const sub of kpi.subsets) {
       ensureBucket(kpi.id, sub.id);
       const subBox = el('div', { class: 'subset' });
+      const subName = window.I18N.subsetName
+        ? window.I18N.subsetName(kpi.id, sub.id, sub.name) : sub.name;
       subBox.appendChild(el('div', { class: 'sub-head' },
         el('span', { class: 'sub-id' }, `${window.I18N.t('subset_label')} ${sub.id}`),
-        el('span', { class: 'sub-name' }, sub.name),
+        el('span', { class: 'sub-name' }, subName),
         el('span', { class: 'sub-weight' }, `${window.I18N.t('weight_label')} ${sub.weight}`),
         el('span', { class: 'sub-score', id: `sub-${kpi.id}-${sub.id}-score` }, '0.00 %')
       ));
@@ -247,7 +257,9 @@ function renderKpis() {
 
       for (const inp of sub.inputs) {
         const lbl = el('label', { class: 'in-row' });
-        lbl.appendChild(el('span', { class: 'in-label' }, inp.label));
+        const labelText = window.I18N.inputLabel
+          ? window.I18N.inputLabel(kpi.id, sub.id, inp.id, inp.label) : inp.label;
+        lbl.appendChild(el('span', { class: 'in-label' }, labelText));
         let widget;
         const stored = state.kpiVals[kpi.id][sub.id][inp.id];
         if (inp.options) {
@@ -255,7 +267,9 @@ function renderKpis() {
           for (const opt of inp.options) {
             const isObj = typeof opt === 'object';
             const value = isObj ? opt.value : opt;
-            const text  = isObj ? opt.label : opt;
+            const baseLabel = isObj ? opt.label : opt;
+            const text = window.I18N.optionLabel
+              ? window.I18N.optionLabel(kpi.id, sub.id, inp.id, value, baseLabel) : baseLabel;
             const o = el('option', { value }, text);
             const cur = stored ?? inp.default;
             if (cur === value) o.selected = true;
@@ -266,8 +280,9 @@ function renderKpis() {
             window.saveState(state); recompute();
           });
         } else {
+          const ph = window.I18N.unit ? window.I18N.unit(inp.unit) : (inp.unit || '');
           widget = el('input', { type: 'number', step: 'any',
-            inputmode: 'decimal', placeholder: inp.unit || '' });
+            inputmode: 'decimal', placeholder: ph });
           if (stored !== undefined && stored !== null && stored !== '') widget.value = stored;
           else if (typeof inp.default === 'number' && inp.default !== 0) widget.value = inp.default;
           widget.addEventListener('input', () => {
@@ -275,7 +290,8 @@ function renderKpis() {
             window.saveState(state); recompute();
           });
         }
-        const unit = el('span', { class: 'in-unit' }, inp.unit || '');
+        const unitText = window.I18N.unit ? window.I18N.unit(inp.unit) : (inp.unit || '');
+        const unit = el('span', { class: 'in-unit' }, unitText);
         const wrap = el('div', { class: 'in-widget' }, widget, unit);
         lbl.appendChild(wrap);
         grid.appendChild(lbl);

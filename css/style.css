@@ -9,35 +9,45 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
-/* ---------- Language switcher (top of every view) ---------- */
+/* ---------- Language switcher (inline) ---------- */
 .lang-bar {
-  position: fixed;
-  top: 10px;
-  right: 12px;
-  z-index: 300;
   display: inline-flex;
   background: rgba(255,255,255,0.95);
   border: 1px solid #c9d2e0;
   border-radius: 999px;
   padding: 2px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  flex: none;
+}
+.lang-bar-inline {
+  align-self: flex-end;       /* sit at the top-right of the login card */
+  margin-bottom: 4px;
+}
+.lang-bar-banner {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: none;
+  margin-right: 6px;
 }
 .lang-btn {
   border: none;
   background: transparent;
-  padding: 6px 12px;
+  padding: 5px 11px;
   font-size: 12px;
   font-weight: 600;
   color: #18497a;
   border-radius: 999px;
   cursor: pointer;
-  min-width: 64px;
+  min-width: 60px;
+  line-height: 1.2;
 }
-.lang-btn:hover { background: #f0f4fa; }
+.lang-bar-banner .lang-btn { color: #ffffff; }
+.lang-btn:hover { background: rgba(255,255,255,0.85); color: #18497a; }
 .lang-btn.active {
-  background: #2c6db4;
-  color: white;
+  background: #ffffff;
+  color: #18497a;
 }
+.lang-bar-inline .lang-btn.active { background: #2c6db4; color: #ffffff; }
 
 /* ---------- Login ---------- */
 .login-view {
@@ -50,10 +60,10 @@ body {
 .login-card {
   background: white;
   border-radius: 12px;
-  padding: 28px 24px;
+  padding: 22px 24px 24px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.18);
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   display: flex; flex-direction: column; gap: 12px;
 }
 .login-card h1 { margin: 0; color: #18497a; font-size: 22px; }
@@ -443,9 +453,8 @@ aside.side {
 }
 
 @media (max-width: 720px) {
-  .lang-bar { top: 6px; right: 6px; }
-  .lang-btn { padding: 5px 10px; min-width: 56px; font-size: 11px; }
-  header.banner { padding-right: 130px; } /* leave room for the lang chip */
+  .lang-btn { padding: 4px 8px; min-width: 50px; font-size: 11px; }
+  .banner-user { gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
   .app, .admin-view { padding: 10px; gap: 10px; }
   .section { padding: 12px; margin-bottom: 12px; }
   header.banner { padding: 12px 14px; }
