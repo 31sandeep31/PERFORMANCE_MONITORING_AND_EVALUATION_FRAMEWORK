@@ -81,19 +81,25 @@ function bootForRole() {
 
 // ---------- Login ----------
 function wireLogin() {
-  $('#login-form').addEventListener('submit', (ev) => {
+  $('#login-form').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const email = $('#login-email').value;
     const pwd   = $('#login-password').value;
-    const r = window.Auth.login(email, pwd);
+    const submitBtn = ev.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
     const errBox = $('#login-error');
-    if (!r.ok) {
-      errBox.textContent = r.error;
-      errBox.hidden = false;
-      return;
+    try {
+      const r = await window.Auth.login(email, pwd);
+      if (!r.ok) {
+        errBox.textContent = r.error;
+        errBox.hidden = false;
+        return;
+      }
+      errBox.hidden = true;
+      bootForRole();
+    } finally {
+      submitBtn.disabled = false;
     }
-    errBox.hidden = true;
-    bootForRole();
   });
 }
 function wireLogout() {
