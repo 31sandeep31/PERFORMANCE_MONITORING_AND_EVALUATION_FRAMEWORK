@@ -9,6 +9,36 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* ---------- Language switcher (top of every view) ---------- */
+.lang-bar {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: 300;
+  display: inline-flex;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #c9d2e0;
+  border-radius: 999px;
+  padding: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.lang-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #18497a;
+  border-radius: 999px;
+  cursor: pointer;
+  min-width: 64px;
+}
+.lang-btn:hover { background: #f0f4fa; }
+.lang-btn.active {
+  background: #2c6db4;
+  color: white;
+}
+
 /* ---------- Login ---------- */
 .login-view {
   position: fixed; inset: 0;
@@ -413,6 +443,9 @@ aside.side {
 }
 
 @media (max-width: 720px) {
+  .lang-bar { top: 6px; right: 6px; }
+  .lang-btn { padding: 5px 10px; min-width: 56px; font-size: 11px; }
+  header.banner { padding-right: 130px; } /* leave room for the lang chip */
   .app, .admin-view { padding: 10px; gap: 10px; }
   .section { padding: 12px; margin-bottom: 12px; }
   header.banner { padding: 12px 14px; }

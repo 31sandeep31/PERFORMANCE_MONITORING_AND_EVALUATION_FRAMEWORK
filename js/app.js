@@ -132,13 +132,14 @@ function renderMeta() {
   const root = $('#meta');
   root.innerHTML = '';
   const fields = [
-    ['utility', 'Utility / Service Provider'],
-    ['municipality', 'Municipality'],
-    ['province', 'Province / District'],
-    ['year', 'Performance Evaluation Year'],
-    ['submittedBy', 'Submitted by'],
+    ['utility',     'meta_utility'],
+    ['municipality','meta_municipality'],
+    ['province',    'meta_province'],
+    ['year',        'meta_year'],
+    ['submittedBy', 'meta_submitted_by'],
   ];
-  for (const [k, label] of fields) {
+  for (const [k, key] of fields) {
+    const label = window.I18N.t(key);
     const inp = el('input', { type: 'text', value: m[k] || '', placeholder: label });
     inp.addEventListener('input', () => { m[k] = inp.value; window.saveState(state); });
     root.appendChild(el('label', { class: 'meta-field' },
@@ -147,13 +148,14 @@ function renderMeta() {
   }
   const sel = el('select');
   for (const opt of ['urban','rural']) {
-    const o = el('option', { value: opt }, opt[0].toUpperCase()+opt.slice(1));
+    const txt = window.I18N.t(opt === 'urban' ? 'area_urban' : 'area_rural');
+    const o = el('option', { value: opt }, txt);
     if (m.areaType === opt) o.selected = true;
     sel.appendChild(o);
   }
   sel.addEventListener('change', () => { m.areaType = sel.value; window.saveState(state); recompute(); });
   root.appendChild(el('label', { class: 'meta-field' },
-    el('span', {}, 'Service Area Type'), sel
+    el('span', {}, window.I18N.t('meta_area')), sel
   ));
 }
 
@@ -164,12 +166,13 @@ function ensureBucket(kpiId, subId) {
 
 function buildHintHtml(kpi) {
   const h = window.KPI_HINTS?.[kpi.id];
-  if (!h) return '<div class="muted">No hint available.</div>';
+  if (!h) return `<div class="muted">${window.I18N.t('hint_unavailable')}</div>`;
+  const T = window.I18N.t.bind(window.I18N);
   let out = '';
-  if (h.concept) out += `<p><strong>Concept:</strong> ${escapeHtml(h.concept)}</p>`;
-  if (h.data)    out += `<p><strong>Data sources:</strong> ${escapeHtml(h.data)}</p>`;
+  if (h.concept) out += `<p><strong>${T('hint_concept')}:</strong> ${escapeHtml(h.concept)}</p>`;
+  if (h.data)    out += `<p><strong>${T('hint_data')}:</strong> ${escapeHtml(h.data)}</p>`;
   if (h.notes && h.notes.length) {
-    out += `<p><strong>Tips:</strong></p><ul>` +
+    out += `<p><strong>${T('hint_tips')}:</strong></p><ul>` +
       h.notes.map(n => `<li>${escapeHtml(n)}</li>`).join('') + `</ul>`;
   }
   return out;
@@ -180,7 +183,7 @@ function escapeHtml(s) {
 
 function showHint(kpi, anchor) {
   const pop = $('#hint-popover');
-  $('#hint-title').textContent = `KPI-${kpi.id}: ${kpi.name}`;
+  $('#hint-title').textContent = `KPI-${kpi.id}: ${window.I18N.kpiName(kpi.id, kpi.name)}`;
   $('#hint-body').innerHTML = buildHintHtml(kpi);
   pop.hidden = false;
   // Position near anchor or center on small screens
@@ -219,7 +222,7 @@ function renderKpis() {
     const head = el('div', { class: 'kpi-head' },
       el('div', { class: 'kpi-name' },
         el('span', { class: 'kpi-num' }, `KPI-${kpi.id}`),
-        el('span', {}, ` ${kpi.name}`)
+        el('span', {}, ` ${window.I18N.kpiName(kpi.id, kpi.name)}`)
       ),
       el('div', { class: 'kpi-head-right' },
         hintBtn,
@@ -235,9 +238,9 @@ function renderKpis() {
       ensureBucket(kpi.id, sub.id);
       const subBox = el('div', { class: 'subset' });
       subBox.appendChild(el('div', { class: 'sub-head' },
-        el('span', { class: 'sub-id' }, `Subset ${sub.id}`),
+        el('span', { class: 'sub-id' }, `${window.I18N.t('subset_label')} ${sub.id}`),
         el('span', { class: 'sub-name' }, sub.name),
-        el('span', { class: 'sub-weight' }, `weight ${sub.weight}`),
+        el('span', { class: 'sub-weight' }, `${window.I18N.t('weight_label')} ${sub.weight}`),
         el('span', { class: 'sub-score', id: `sub-${kpi.id}-${sub.id}-score` }, '0.00 %')
       ));
       const grid = el('div', { class: 'inputs' });
@@ -286,7 +289,7 @@ function renderKpis() {
     } else {
       if (kpi.subcat && kpi.subcat !== lastSubcat) {
         lastSubcat = kpi.subcat;
-        wrapB.appendChild(el('h3', { class: 'subcat-head' }, kpi.subcat));
+        wrapB.appendChild(el('h3', { class: 'subcat-head' }, window.I18N.subcat(kpi.subcat)));
       }
       wrapB.appendChild(kpiCard);
     }
@@ -305,7 +308,7 @@ function recompute() {
   }
   $('#cat-a-avg').textContent = `${r.catAAvg.toFixed(2)} %`;
   $('#cat-b-avg').textContent = `${r.catBAvg.toFixed(2)} %`;
-  $('#zone-name').textContent = r.zone?.name || '—';
+  $('#zone-name').textContent = r.zone ? window.I18N.zone(r.zone.name) : '—';
   if (r.zone) $('#zone-pill').style.background = r.zone.color;
   $('#zone-pill').style.opacity = r.zone ? 1 : 0.5;
   const canvas = $('#chart');
@@ -318,18 +321,19 @@ function renderHistoryList() {
   if (!list) return;
   list.innerHTML = '';
   if (!history.length) {
-    list.appendChild(el('div', { class: 'muted' }, 'No history snapshots yet.'));
+    list.appendChild(el('div', { class: 'muted' }, window.I18N.t('no_history')));
     return;
   }
   history.forEach((h, i) => {
+    const zoneTxt = h.zone ? window.I18N.zone(h.zone) : '—';
     const row = el('div', { class: 'hist-row' },
-      el('span', {}, `${i+1}. ${h.label || 'Snapshot'} — A: ${h.catAAvg}%  B: ${h.catBAvg}%  → ${h.zone || '—'}`),
+      el('span', {}, `${i+1}. ${h.label || ''} — A: ${h.catAAvg}%  B: ${h.catBAvg}%  → ${zoneTxt}`),
       el('button', { onclick: () => {
         history.splice(i, 1);
         const s = window.Auth.current();
         localStorage.setItem(HISTORY_KEY_FOR(s?.email), JSON.stringify(history));
         renderHistoryList(); recompute();
-      } }, 'Remove')
+      } }, window.I18N.t('btn_remove'))
     );
     list.appendChild(row);
   });
@@ -345,7 +349,7 @@ function snapshotCurrent() {
   renderHistoryList(); recompute();
 }
 function clearAllData() {
-  if (!confirm('Clear your data and history?')) return;
+  if (!confirm(window.I18N.t('confirm_clear_self'))) return;
   state.meta = { utility:'', municipality:'', province:'', areaType:'urban',
                  year: new Date().getFullYear(), submittedBy:'' };
   state.kpiVals = {};
@@ -358,7 +362,7 @@ function clearAllData() {
 function submitToAdmin() {
   const r = window.computeAll(state);
   if (!state.meta?.utility) {
-    flash('Please fill at least the Utility name first.', true);
+    flash(window.I18N.t('toast_need_util'), true);
     return;
   }
   const session = window.Auth.current();
@@ -370,7 +374,7 @@ function submitToAdmin() {
     results: r,
   };
   window.Submissions.save(record);
-  flash('Submitted to admin ✓');
+  flash(window.I18N.t('toast_submitted'));
 }
 
 function wireToolbar() {
@@ -407,10 +411,10 @@ function bootAdmin(session) {
   $('#admin-refresh').onclick = renderAdminList;
   $('#admin-search').oninput  = renderAdminList;
   $('#admin-clear-all').onclick = () => {
-    if (!confirm('Permanently delete ALL submissions on this device?')) return;
+    if (!confirm(window.I18N.t('confirm_clear_all'))) return;
     window.Submissions.clearAll();
     renderAdminList();
-    $('#admin-detail').innerHTML = '<div class="muted">No submission selected.</div>';
+    $('#admin-detail').innerHTML = `<div class="muted">${window.I18N.t('pick_one')}</div>`;
   };
   $('#admin-export-all').onclick = exportAllAdmin;
   renderAdminList();
@@ -427,39 +431,37 @@ function renderAdminList() {
   }) : all;
 
   if (!filtered.length) {
-    list.appendChild(el('div', { class: 'muted' }, all.length ? 'No matching submissions.' : 'No submissions yet.'));
+    list.appendChild(el('div', { class: 'muted' },
+      window.I18N.t(all.length ? 'no_match' : 'no_subs')));
     return;
   }
 
   // Header (desktop)
+  const T = window.I18N.t.bind(window.I18N);
+  const headers = [T('th_utility'), T('th_muni'), T('th_year'),
+                   T('cat_a_metric'), T('cat_b_metric'),
+                   T('th_zone'), T('th_submitted'), ''];
   const header = el('div', { class: 'admin-row admin-row-head' },
-    el('span', {}, 'Utility'),
-    el('span', {}, 'Municipality'),
-    el('span', {}, 'Year'),
-    el('span', {}, 'Cat A %'),
-    el('span', {}, 'Cat B %'),
-    el('span', {}, 'Zone'),
-    el('span', {}, 'Submitted'),
-    el('span', {}, '')
+    ...headers.map(h => el('span', {}, h))
   );
   list.appendChild(header);
 
   for (const r of filtered) {
     const row = el('div', { class: 'admin-row' },
-      el('span', { 'data-l':'Utility' },     r.meta?.utility || '—'),
-      el('span', { 'data-l':'Municipality' },r.meta?.municipality || '—'),
-      el('span', { 'data-l':'Year' },        String(r.meta?.year || '—')),
-      el('span', { 'data-l':'Cat A %' },     `${r.results?.catAAvg ?? '—'} %`),
-      el('span', { 'data-l':'Cat B %' },     `${r.results?.catBAvg ?? '—'} %`),
-      el('span', { 'data-l':'Zone' },        r.results?.zone?.name || '—'),
-      el('span', { 'data-l':'Submitted' },   (r.submittedAt || '').replace('T',' ').slice(0,16)),
+      el('span', { 'data-l': T('th_utility') },  r.meta?.utility || '—'),
+      el('span', { 'data-l': T('th_muni') },     r.meta?.municipality || '—'),
+      el('span', { 'data-l': T('th_year') },     String(r.meta?.year || '—')),
+      el('span', { 'data-l': T('cat_a_metric') },`${r.results?.catAAvg ?? '—'} %`),
+      el('span', { 'data-l': T('cat_b_metric') },`${r.results?.catBAvg ?? '—'} %`),
+      el('span', { 'data-l': T('th_zone') },     r.results?.zone?.name ? window.I18N.zone(r.results.zone.name) : '—'),
+      el('span', { 'data-l': T('th_submitted') },(r.submittedAt || '').replace('T',' ').slice(0,16)),
       el('span', { class: 'admin-actions' },
-        el('button', { onclick: () => showAdminDetail(r.id) }, 'Open'),
+        el('button', { onclick: () => showAdminDetail(r.id) }, T('btn_open')),
         el('button', { class: 'danger', onclick: () => {
-          if (!confirm('Delete this submission?')) return;
+          if (!confirm(T('confirm_del_one'))) return;
           window.Submissions.remove(r.id);
           renderAdminList();
-        } }, 'Delete')
+        } }, T('btn_delete'))
       )
     );
     list.appendChild(row);
@@ -468,9 +470,11 @@ function renderAdminList() {
 
 function showAdminDetail(id) {
   const rec = window.Submissions.get(id);
+  window.__lastOpenedSubId = id;
   const root = $('#admin-detail');
   if (!rec) { root.innerHTML = '<div class="muted">Not found.</div>'; return; }
   root.innerHTML = '';
+  const T = window.I18N.t.bind(window.I18N);
 
   const head = el('div', { class: 'detail-head' },
     el('h3', {}, `${rec.meta?.utility || 'Utility'} — ${rec.meta?.year || ''}`),
@@ -481,17 +485,17 @@ function showAdminDetail(id) {
 
   const summary = el('div', { class: 'summary-grid' },
     el('div', { class: 'metric' },
-      el('div', { class:'lab' }, 'Cat A — Service Level'),
+      el('div', { class:'lab' }, T('cat_a_metric')),
       el('div', { class:'val' }, `${rec.results?.catAAvg ?? '—'} %`)),
     el('div', { class: 'metric' },
-      el('div', { class:'lab' }, 'Cat B — O&M Efficiency'),
+      el('div', { class:'lab' }, T('cat_b_metric')),
       el('div', { class:'val' }, `${rec.results?.catBAvg ?? '—'} %`)),
   );
   root.appendChild(summary);
   if (rec.results?.zone) {
     const z = el('div', { class: 'zone-box' },
-      el('div', { class:'lab' }, 'Career Path'),
-      el('div', { class:'zone-pill' }, rec.results.zone.name));
+      el('div', { class:'lab' }, T('zone_label')),
+      el('div', { class:'zone-pill' }, window.I18N.zone(rec.results.zone.name)));
     z.querySelector('.zone-pill').style.background = rec.results.zone.color;
     root.appendChild(z);
   }
@@ -506,12 +510,14 @@ function showAdminDetail(id) {
 
   // KPI table
   const table = el('table', { class: 'kpi-table' });
-  table.innerHTML = '<thead><tr><th>KPI</th><th>Name</th><th>Cat</th><th>Score %</th></tr></thead>';
+  table.innerHTML = `<thead><tr>
+    <th>${T('th_kpi')}</th><th>${T('th_name')}</th>
+    <th>${T('th_cat')}</th><th>${T('th_score')}</th></tr></thead>`;
   const tbody = el('tbody');
   for (const k of (rec.results?.kpis || [])) {
     const tr = el('tr', {},
       el('td', {}, String(k.id)),
-      el('td', {}, k.name),
+      el('td', {}, window.I18N.kpiName(k.id, k.name)),
       el('td', {}, k.category),
       el('td', { style: 'text-align:right' }, `${k.score}`));
     tbody.appendChild(tr);
@@ -521,8 +527,8 @@ function showAdminDetail(id) {
 
   // Buttons
   const tools = el('div', { class: 'toolbar-inline' },
-    el('button', { class: 'primary', onclick: () => exportSubmissionAsExcel(rec) }, '📊 Export this report (.xlsx)'),
-    el('button', { onclick: () => exportSubmissionAsJson(rec) }, '💾 Download JSON'),
+    el('button', { class: 'primary', onclick: () => exportSubmissionAsExcel(rec) }, T('btn_export_report')),
+    el('button', { onclick: () => exportSubmissionAsJson(rec) }, T('btn_json')),
   );
   root.appendChild(tools);
 }
@@ -586,8 +592,41 @@ function wireHintPopover() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideHint(); });
 }
 
+// ---------- Language toggle wiring ----------
+function wireLangToggle() {
+  document.querySelectorAll('.lang-bar .lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.I18N.set(btn.dataset.lang);
+    });
+  });
+}
+
+// Called by I18N.set() — re-render views that contain dynamic translated text.
+window.onLangChange = function() {
+  const s = window.Auth.current();
+  if (!s) return;
+  if (s.role === 'admin') {
+    renderAdminList();
+    // If a detail is open, re-render it
+    const open = document.querySelector('.detail-head h3');
+    if (open) {
+      const id = window.__lastOpenedSubId;
+      if (id) showAdminDetail(id);
+    }
+  } else {
+    // Re-render meta + KPI cards + history + scores
+    renderMeta();
+    renderKpis();
+    renderHistoryList();
+    recompute();
+  }
+};
+
 // ---------- Boot ----------
 document.addEventListener('DOMContentLoaded', () => {
+  window.I18N.init();
+  window.I18N.applyStatic();
+  wireLangToggle();
   wireLogin();
   wireLogout();
   wireHintPopover();
