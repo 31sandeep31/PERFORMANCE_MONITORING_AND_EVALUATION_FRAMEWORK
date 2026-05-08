@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="theme-color" content="#18497a">
+<title>Water Supply M&E – KPI Performance Tool</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+</head>
+<body>
+
+<div id="flash" class="flash"></div>
+
+<!-- ========== LOGIN VIEW ========== -->
+<div id="login-view" class="login-view" hidden>
+  <form id="login-form" class="login-card" autocomplete="on">
+    <h1>Water Supply M&amp;E</h1>
+    <p class="muted">KPI Performance Monitoring &amp; Evaluation Tool</p>
+    <label>
+      <span>Email</span>
+      <input id="login-email" type="email" placeholder="you@example.com" autocomplete="username" required>
+    </label>
+    <label>
+      <span>Password</span>
+      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" required>
+    </label>
+    <div id="login-error" class="login-error" hidden></div>
+    <button type="submit" class="primary">Sign In</button>
+    <p class="muted small">Users fill in the KPIs. Admins can review all submitted reports.</p>
+  </form>
+</div>
+
+<!-- ========== APP VIEW (USER) ========== -->
+<div id="app-view" class="app" hidden>
+
+  <header class="banner">
+    <div class="banner-row">
+      <div>
+        <h1>Water Supply M&amp;E – KPI Performance Tool</h1>
+        <p>Enter performance data for the 23 KPIs. Scores, category averages and the Career Path Chart update live.</p>
+      </div>
+      <div class="banner-user">
+        <div class="user-name" id="who"></div>
+        <button id="btn-logout" class="ghost">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <h2>1. Utility Information</h2>
+      <div id="meta" class="meta"></div>
+    </section>
+
+    <section class="section">
+      <h2>2. Category A — Level &amp; Quality of Water Supply Service</h2>
+      <div id="cat-a"></div>
+    </section>
+
+    <section class="section">
+      <h2>3. Category B — Operational &amp; Management Efficiency</h2>
+      <div id="cat-b"></div>
+    </section>
+  </main>
+
+  <aside class="side">
+    <section class="section">
+      <h2>Live Career Path</h2>
+      <div id="chart-wrap"><canvas id="chart"></canvas></div>
+      <div class="summary-grid">
+        <div class="metric">
+          <div class="lab">Cat A — Service Level</div>
+          <div class="val" id="cat-a-avg">0.00 %</div>
+        </div>
+        <div class="metric">
+          <div class="lab">Cat B — O&amp;M Efficiency</div>
+          <div class="val" id="cat-b-avg">0.00 %</div>
+        </div>
+      </div>
+      <div class="zone-box">
+        <div class="lab">Service Provider Position</div>
+        <div id="zone-pill" class="zone-pill"><span id="zone-name">—</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Submit &amp; Export</h2>
+      <div class="toolbar">
+        <button id="btn-submit-admin" class="primary">📤 Submit to Admin</button>
+        <button id="btn-export-excel">📊 Download Excel (.xlsx)</button>
+        <button id="btn-export-png">🖼️ Download Chart PNG</button>
+        <button id="btn-export-json">💾 Download JSON</button>
+        <button id="btn-save-folder">📁 Save to Drive Folder…</button>
+        <input id="cloud-endpoint" type="text" placeholder="Cloud submission URL (optional)">
+        <button id="btn-cloud">☁️ POST to Cloud Endpoint</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Year-wise History</h2>
+      <div class="toolbar">
+        <button id="btn-snapshot">➕ Snapshot current year</button>
+        <button id="btn-clear" class="danger">🗑️ Clear my data &amp; history</button>
+      </div>
+      <div id="history-list" style="margin-top:10px;"></div>
+    </section>
+  </aside>
+</div>
+
+<!-- ========== ADMIN VIEW ========== -->
+<div id="admin-view" class="admin-view" hidden>
+  <header class="banner">
+    <div class="banner-row">
+      <div>
+        <h1>Admin Dashboard – Submitted KPI Reports</h1>
+        <p>Review utility submissions, open detailed reports, and export.</p>
+      </div>
+      <div class="banner-user">
+        <div class="user-name" id="who-admin"></div>
+        <button id="btn-logout-2" class="ghost">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="section">
+    <h2>Submissions</h2>
+    <div class="toolbar-inline">
+      <input id="admin-search" type="text" placeholder="Filter by utility / municipality / year…">
+      <button id="admin-refresh">↻ Refresh</button>
+      <button id="admin-export-all">⬇ Export ALL as Excel</button>
+      <button id="admin-clear-all" class="danger">🗑️ Clear ALL submissions</button>
+    </div>
+    <div id="admin-list" class="admin-list"></div>
+  </section>
+
+  <section class="section">
+    <h2>Selected Submission</h2>
+    <div id="admin-detail" class="admin-detail">
+      <div class="muted">Pick a submission from the list above.</div>
+    </div>
+  </section>
+</div>
+
+<!-- ========== HINT POPOVER ========== -->
+<div id="hint-popover" class="hint-popover" hidden>
+  <div class="hint-head">
+    <strong id="hint-title">Hint</strong>
+    <button id="hint-close" aria-label="Close">×</button>
+  </div>
+  <div id="hint-body" class="hint-body"></div>
+</div>
+
+<!-- ========== SCRIPTS ========== -->
+<script src="js/auth.js"></script>
+<script src="js/submissions.js"></script>
+<script src="js/hints.js"></script>
+<script src="js/kpi-config.js"></script>
+<script src="js/compute.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/chart.js"></script>
+<script src="js/exporter.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
